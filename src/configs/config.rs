@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
-pub enum ConfigType {
-    MarshoCfg,
-    ModelCfg,
-}
+// pub enum ConfigType {
+//     MarshoCfg,
+//     ModelCfg,
+// }
 
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -12,6 +12,7 @@ pub struct MarshoConfig {
     pub base_url: String,
     pub api_key: String,
     pub stream: bool,
+    pub system_prompt: String,
 }
 
 impl Default for MarshoConfig {
@@ -20,6 +21,7 @@ impl Default for MarshoConfig {
             base_url: "https://api.deepseek.com".to_string(),
             api_key: "".to_string(),
             stream: true,
+            system_prompt: String::from("你是一只可爱的猫娘，你的名字叫Marsho"),
         }
     }
 }
@@ -41,7 +43,6 @@ impl Default for ModelConfig {
 pub fn load_model_config() -> anyhow::Result<ModelConfig> {
     let config_path = "model_config.yaml";
     let config_str = serde_yaml::to_string(&ModelConfig::default())?;
-    println!("{}", config_path);
     let path = Path::new(config_path);
 
     if !path.exists() {
@@ -58,7 +59,6 @@ pub fn load_model_config() -> anyhow::Result<ModelConfig> {
 pub fn load_marsho_config() -> anyhow::Result<MarshoConfig> {
     let config_path = "config.yaml";
     let config_str = serde_yaml::to_string(&MarshoConfig::default())?;
-    println!("{}", config_path);
     let path = Path::new(config_path);
 
     if !path.exists() {
