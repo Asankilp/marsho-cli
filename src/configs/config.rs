@@ -9,9 +9,9 @@ pub enum ConfigType {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarshoConfig {
-    base_url: String,
-    api_key: String,
-    stream: bool,
+    pub base_url: String,
+    pub api_key: String,
+    pub stream: bool,
 }
 
 impl Default for MarshoConfig {
@@ -26,7 +26,7 @@ impl Default for MarshoConfig {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModelConfig {
-    model: String,
+    pub model: String,
 }
 
 impl Default for ModelConfig {
@@ -37,25 +37,27 @@ impl Default for ModelConfig {
     }
 }
 
-#[derive(Debug)]
-pub enum Config {
-    Marsho(MarshoConfig),
-    Model(ModelConfig),
+
+pub fn load_model_config() -> anyhow::Result<ModelConfig> {
+    let config_path = "model_config.yaml";
+    let config_str = serde_yaml::to_string(&ModelConfig::default())?;
+    println!("{}", config_path);
+    let path = Path::new(config_path);
+
+    if !path.exists() {
+        std::fs::write(config_path, config_str)?;
+    }
+
+    let settings = config::Config::builder()
+        .add_source(config::File::with_name(config_path))
+        .build()?;
+    
+    settings.try_deserialize().map_err(Into::into)
 }
 
-pub fn load_config(r#type: ConfigType) -> anyhow::Result<config::Value> {
-    let config_path: &str;
-    let config_str: String;
-    match r#type {
-        ConfigType::MarshoCfg => {
-            config_path = "config.yaml";
-            config_str = serde_yaml::to_string(&MarshoConfig::default())?;
-        }
-        ConfigType::ModelCfg => {
-            config_path = "model_config.yaml";
-            config_str = serde_yaml::to_string(&ModelConfig::default())?;
-        }
-    }
+pub fn load_marsho_config() -> anyhow::Result<MarshoConfig> {
+    let config_path = "config.yaml";
+    let config_str = serde_yaml::to_string(&MarshoConfig::default())?;
     println!("{}", config_path);
     let path = Path::new(config_path);
 

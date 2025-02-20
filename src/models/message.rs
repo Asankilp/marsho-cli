@@ -1,7 +1,8 @@
+#[derive(Debug)]
 pub struct Marsho {
-    base_url: String,
-    api_key: String,
-    contexts: Vec<String>,
+    pub base_url: String,
+    pub api_key: String,
+    // contexts: Vec<String>,
 }
 
 #[derive(Debug)]

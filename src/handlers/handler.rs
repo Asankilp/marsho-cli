@@ -1,7 +1,8 @@
 use reqwest::{Client, header};
-
-pub async fn get(base_url: &String, api_key: &String) -> Result<String, reqwest::Error> {
+use crate::models::message::Marsho;
+pub async fn get(marsho: &Marsho) -> Result<String, reqwest::Error> {
     let client = Client::new();
+    let url = marsho.base_url;
     let res = client.get(url)
         .header(header::USER_AGENT, "reqwest")
         .send()
