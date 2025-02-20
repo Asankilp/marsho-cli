@@ -37,7 +37,13 @@ impl Default for ModelConfig {
     }
 }
 
-pub fn load_config(r#type: ConfigType) -> anyhow::Result<()> {
+#[derive(Debug)]
+pub enum Config {
+    Marsho(MarshoConfig),
+    Model(ModelConfig),
+}
+
+pub fn load_config(r#type: ConfigType) -> anyhow::Result<config::Value> {
     let config_path: &str;
     let config_str: String;
     match r#type {
@@ -54,8 +60,6 @@ pub fn load_config(r#type: ConfigType) -> anyhow::Result<()> {
     let path = Path::new(config_path);
 
     if !path.exists() {
-        // let default_config = MarshoConfig::default();
-        // let config_str = serde_yaml::to_string(&default_config)?;
         std::fs::write(config_path, config_str)?;
     }
 
