@@ -19,21 +19,21 @@ pub struct BaseMessage<'a> {
 }
 
 impl BaseMessage<'_> {
-    pub fn user(content: &String) -> BaseMessage {
+    pub fn user(content: &str) -> BaseMessage {
         BaseMessage {
             role: "user",
             content: content,
         }
     }
 
-    pub fn system(content: &String) -> BaseMessage {
+    pub fn system(content: &str) -> BaseMessage {
         BaseMessage {
             role: "system",
             content: content,
         }
     }
 
-    pub fn assistant(content: &String) -> BaseMessage {
+    pub fn assistant(content: &str) -> BaseMessage {
         BaseMessage {
             role: "assistant",
             content: content,

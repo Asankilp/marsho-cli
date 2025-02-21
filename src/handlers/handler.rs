@@ -10,7 +10,7 @@ struct RequestJson<'a> {
 }
 
 #[tokio::main]
-pub async fn make_chat(marsho: &MarshoConfig, arg: &ModelConfig, message: &String) -> Result<String, reqwest::Error> {
+pub async fn make_chat(marsho: &MarshoConfig, arg: &ModelConfig, message: &str) -> Result<String, reqwest::Error> {
     let client = Client::new();
     let url = Url::parse(&marsho.base_url).unwrap();
     let api_key = &marsho.api_key;
