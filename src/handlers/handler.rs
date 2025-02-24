@@ -4,15 +4,15 @@ use crate::{
 };
 use serde_json::Value;
 
-pub struct MarshoHandler<'a> {
+pub struct MarshoHandler {
     config: MarshoConfig,
     model_config: Value,
-    context: MarshoContext<'a>,
+    context: MarshoContext,
     client: OpenAIClient,
 }
 
-impl<'a> MarshoHandler<'a> {
-    pub fn new(config: MarshoConfig, model_config: Value, context: MarshoContext<'a>) -> Self {
+impl MarshoHandler {
+    pub fn new(config: MarshoConfig, model_config: Value, context: MarshoContext) -> Self {
         let client = OpenAIClient::new(config.base_url.clone(), config.api_key.clone());
         Self {
             config,
@@ -23,10 +23,11 @@ impl<'a> MarshoHandler<'a> {
     }
 
     pub fn handle(&mut self, input: String) -> Result<String, reqwest::Error> {
-        let message = vec![
-            BaseMessage::system(&self.config.system_prompt),
-            BaseMessage::user(&input),
-        ];
+        let mut message = vec![
+                    BaseMessage::system(self.config.system_prompt.to_string()),
+                ];
+        message.extend(self.context.get().iter().cloned());
+        message.extend(vec![BaseMessage::user(input.to_string())]);
         let chat = self.client.make_chat(&mut self.model_config, message)?;
         let response = chat["choices"][0]["message"]["content"].as_str().unwrap();
         Ok(response.to_string())

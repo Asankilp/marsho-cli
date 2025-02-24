@@ -10,30 +10,30 @@
 //     message: Vec<BaseMessage<'a>>,
 // }
 
-#[derive(serde::Serialize)]
-pub struct BaseMessage<'a> {
-    pub role: &'a str,
-    pub content: &'a str,
+#[derive(serde::Serialize, Clone)]
+pub struct BaseMessage {
+    pub role: String,
+    pub content: String,
 }
 
-impl BaseMessage<'_> {
-    pub fn user(content: &str) -> BaseMessage {
+impl BaseMessage {
+    pub fn user(content: String) -> BaseMessage {
         BaseMessage {
-            role: "user",
+            role: "user".to_string(),
             content: content,
         }
     }
 
-    pub fn system(content: &str) -> BaseMessage {
+    pub fn system(content: String) -> BaseMessage {
         BaseMessage {
-            role: "system",
+            role: "system".to_string(),
             content: content,
         }
     }
 
-    pub fn assistant(content: &str) -> BaseMessage {
+    pub fn assistant(content: String) -> BaseMessage {
         BaseMessage {
-            role: "assistant",
+            role: "assistant".to_string(),
             content: content,
         }
     }

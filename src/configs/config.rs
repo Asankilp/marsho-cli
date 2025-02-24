@@ -7,7 +7,7 @@ use std::path::Path;
 //     ModelCfg,
 // }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MarshoConfig {
     pub base_url: String,
     pub api_key: String,

@@ -1,17 +1,18 @@
 use super::message::BaseMessage;
 
-pub struct MarshoContext<'a> {
-    messages: Vec<BaseMessage<'a>>,
+#[derive(Clone)]
+pub struct MarshoContext {
+    messages: Vec<BaseMessage>,
 }
 
-impl<'a> MarshoContext<'a> {
+impl MarshoContext {
     pub fn new() -> Self {
         Self {
             messages: Vec::new(),
         }
     }
 
-    pub fn add(&mut self, message: BaseMessage<'a>) {
+    pub fn add(&mut self, message: BaseMessage) {
         self.messages.push(message);
     }
 
