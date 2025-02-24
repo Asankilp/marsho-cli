@@ -1,4 +1,3 @@
-
 // #[derive(Debug)]
 // pub struct Marsho {
 //     pub base_url: String,
@@ -6,7 +5,6 @@
 //     pub model_args: ModelConfig,
 //     // contexts: Vec<String>,
 // }
-
 
 // pub struct MessageSegment<'a> {
 //     message: Vec<BaseMessage<'a>>,

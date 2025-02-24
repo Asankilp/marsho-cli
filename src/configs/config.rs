@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::path::Path;
 
 // pub enum ConfigType {
 //     MarshoCfg,
 //     ModelCfg,
 // }
-
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MarshoConfig {
@@ -39,21 +39,17 @@ impl Default for ModelConfig {
     }
 }
 
-
-pub fn load_model_config() -> anyhow::Result<ModelConfig> {
-    let config_path = "model_config.yaml";
-    let config_str = serde_yaml::to_string(&ModelConfig::default())?;
+pub fn load_model_config() -> anyhow::Result<Value> {
+    let config_path = "model_config.json";
+    let config_str = serde_json::to_string(&ModelConfig::default())?;
     let path = Path::new(config_path);
 
     if !path.exists() {
         std::fs::write(config_path, config_str)?;
     }
 
-    let settings = config::Config::builder()
-        .add_source(config::File::with_name(config_path))
-        .build()?;
-    
-    settings.try_deserialize().map_err(Into::into)
+    let json_str = std::fs::read_to_string(config_path)?;
+    serde_json::from_str(&json_str).map_err(Into::into)
 }
 
 pub fn load_marsho_config() -> anyhow::Result<MarshoConfig> {
@@ -68,6 +64,6 @@ pub fn load_marsho_config() -> anyhow::Result<MarshoConfig> {
     let settings = config::Config::builder()
         .add_source(config::File::with_name(config_path))
         .build()?;
-    
+
     settings.try_deserialize().map_err(Into::into)
 }

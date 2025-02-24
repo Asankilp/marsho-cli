@@ -1,43 +1,34 @@
-use reqwest::{Client, header};
+use crate::{
+    configs::config::MarshoConfig,
+    models::{client::OpenAIClient, context::MarshoContext, message::BaseMessage},
+};
 use serde_json::Value;
-use crate::{configs::config::{MarshoConfig, ModelConfig}, models::message::BaseMessage};
-use url::Url;
 
-#[derive(serde::Serialize)]
-struct RequestJson<'a> {
-    model: String,
-    messages: Vec<BaseMessage<'a>>,
+pub struct MarshoHandler<'a> {
+    config: MarshoConfig,
+    model_config: Value,
+    context: MarshoContext<'a>,
+    client: OpenAIClient,
 }
 
-#[tokio::main]
-pub async fn make_chat(marsho: &MarshoConfig, arg: &ModelConfig, message: &str) -> Result<String, reqwest::Error> {
-    let client = Client::new();
-    let url = Url::parse(&marsho.base_url).unwrap();
-    let api_key = &marsho.api_key;
-    let mut headers = header::HeaderMap::new();
-    headers.insert("Authorization", header::HeaderValue::from_str(api_key).unwrap());
-    let request = RequestJson {
-        model: arg.model.clone(),
-        messages: vec![
-            BaseMessage::system(&marsho.system_prompt),
-            BaseMessage::user(&message),
-            ],
-    };
-    
-    let res = client.post(url.join("chat/completions").unwrap())
-        .headers(headers)
-        .json(&request)
-        .send()
-        .await?;
-    let body = res.text().await?;
-    
-    // 解析JSON并提取content
-    let json: Value = serde_json::from_str(&body).unwrap();
-    let content = json["choices"][0]["message"]["content"]
-        .as_str()
-        .unwrap_or("无法获取响应内容")
-        .to_string();
-        
-    Ok(content)
-}
+impl<'a> MarshoHandler<'a> {
+    pub fn new(config: MarshoConfig, model_config: Value, context: MarshoContext<'a>) -> Self {
+        let client = OpenAIClient::new(config.base_url.clone(), config.api_key.clone());
+        Self {
+            config,
+            model_config,
+            context,
+            client,
+        }
+    }
 
+    pub fn handle(&mut self, input: String) -> Result<String, reqwest::Error> {
+        let message = vec![
+            BaseMessage::system(&self.config.system_prompt),
+            BaseMessage::user(&input),
+        ];
+        let chat = self.client.make_chat(&mut self.model_config, message)?;
+        let response = chat["choices"][0]["message"]["content"].as_str().unwrap();
+        Ok(response.to_string())
+    }
+}
