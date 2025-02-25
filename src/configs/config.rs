@@ -40,8 +40,8 @@ impl Default for ModelConfig {
 }
 
 pub fn load_model_config() -> anyhow::Result<Value> {
-    let config_path = "model_config.json";
-    let config_str = serde_json::to_string(&ModelConfig::default())?;
+    let config_path = "model_config.yaml";
+    let config_str = serde_yaml::to_string(&ModelConfig::default())?;
     let path = Path::new(config_path);
 
     if !path.exists() {
@@ -49,7 +49,7 @@ pub fn load_model_config() -> anyhow::Result<Value> {
     }
 
     let json_str = std::fs::read_to_string(config_path)?;
-    serde_json::from_str(&json_str).map_err(Into::into)
+    serde_yaml::from_str(&json_str).map_err(Into::into)
 }
 
 pub fn load_marsho_config() -> anyhow::Result<MarshoConfig> {
