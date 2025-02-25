@@ -36,7 +36,7 @@ jobs:
           mkdir -p target/artifacts
           cp target/release/marsho-cli.exe target/artifacts/windows-binary.exe
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-release
           path: target/artifacts/
