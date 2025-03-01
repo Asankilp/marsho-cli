@@ -54,12 +54,32 @@ jobs:
       - name: Install Android OpenSSL
         if: matrix.target == 'aarch64-linux-android'
         run: |
-          git clone https://github.com/KDAB/android_openssl.git
-          cd android_openssl
-          ./build_ssl.sh arm64
-          echo "OPENSSL_DIR=$PWD/android_openssl_arm64" >> $GITHUB_ENV
-          echo "OPENSSL_INCLUDE_DIR=$PWD/android_openssl_arm64/include" >> $GITHUB_ENV
-          echo "OPENSSL_LIB_DIR=$PWD/android_openssl_arm64/lib" >> $GITHUB_ENV
+          # 下载并解压 OpenSSL 源码
+          curl -LO https://www.openssl.org/source/openssl-3.1.4.tar.gz
+          tar xf openssl-3.1.4.tar.gz
+          cd openssl-3.1.4
+
+          # 设置交叉编译环境变量
+          export ANDROID_NDK_ROOT=${{ env.ANDROID_NDK_PATH }}
+          export PATH=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+          export ANDROID_API=24
+          export CC=aarch64-linux-android$ANDROID_API-clang
+          export CXX=aarch64-linux-android$ANDROID_API-clang++
+          export CFLAGS="-D__ANDROID_API__=$ANDROID_API"
+          
+          # 配置并编译 OpenSSL
+          ./Configure android-arm64 \
+            --prefix=$PWD/../openssl-android-arm64 \
+            --openssldir=$PWD/../openssl-android-arm64 \
+            no-shared no-tests
+          
+          make -j$(nproc)
+          make install_sw
+
+          # 设置环境变量
+          echo "OPENSSL_DIR=$PWD/../openssl-android-arm64" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=$PWD/../openssl-android-arm64/include" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=$PWD/../openssl-android-arm64/lib" >> $GITHUB_ENV
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
