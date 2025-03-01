@@ -22,6 +22,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Linux Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev pkg-config
+
+      - name: Install macOS Dependencies
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install openssl@3
+          echo "OPENSSL_DIR=$(brew --prefix openssl@3)" >> $GITHUB_ENV
+
+      - name: Install Android OpenSSL
+        if: matrix.target == 'aarch64-linux-android'
+        run: |
+          git clone https://github.com/KDAB/android_openssl.git
+          cd android_openssl
+          ./build.sh arm64
+          echo "OPENSSL_DIR=$PWD/android_openssl_arm64" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=$PWD/android_openssl_arm64/include" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=$PWD/android_openssl_arm64/lib" >> $GITHUB_ENV
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
