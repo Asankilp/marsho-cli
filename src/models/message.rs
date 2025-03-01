@@ -1,4 +1,4 @@
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct BaseMessage {
     pub role: String,
     pub content: String,

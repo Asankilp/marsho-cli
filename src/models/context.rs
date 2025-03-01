@@ -1,6 +1,6 @@
 use super::message::BaseMessage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MarshoContext {
     messages: Vec<BaseMessage>,
 }

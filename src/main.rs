@@ -12,20 +12,26 @@ use models::{context::MarshoContext, message::BaseMessage};
 use std::io::{self, Write};
 use utils::session;
 
+const ASCII_BANNER: &str = r#"
+  __  __                        _                        ____   _       ___ 
+ |  \/  |   __ _   _ __   ___  | |__     ___            / ___| | |     |_ _|
+ | |\/| |  / _` | | '__| / __| | '_ \   / _ \   _____  | |     | |      | | 
+ | |  | | | (_| | | |    \__ \ | | | | | (_) | |_____| | |___  | |___   | | 
+ |_|  |_|  \__,_| |_|    |___/ |_| |_|  \___/           \____| |_____| |___|
+                                                                            
+"#;
+
 fn main() -> anyhow::Result<()> {
     let mut context = MarshoContext::new();
     let marsho_configs = load_marsho_config()?;
     let model_configs = load_model_config()?;
     let mut session_name = "default".to_string();
-    println!("Marsho-CLI!");
+    
+    println!("{}", ASCII_BANNER.bright_magenta());
     println!("使用 /reset 命令重置上下文");
+    println!("使用 /session <会话名称> 命令切换会话");
 
     loop {
-        let mut handler = MarshoHandler::new(
-            marsho_configs.clone(),
-            model_configs.clone(),
-            context.clone(),
-        );
         print!("[{}] >>> ", session_name.bright_green().bold());
         io::stdout().flush()?;
         let mut input = String::new();
@@ -41,6 +47,12 @@ fn main() -> anyhow::Result<()> {
                 Command::Chat(input) => {
                     let loaded_session = session::read_session(&session_name)?;
                     context.set(loaded_session);
+                    let mut handler = MarshoHandler::new(
+                        marsho_configs.clone(),
+                        model_configs.clone(),
+                        context.clone(),
+                    );
+                    // println!("{:?}", context);
                     let chat = handler.handle(input.clone())?;
                     let reply = chat["choices"][0]["message"]["content"]
                         .as_str()
