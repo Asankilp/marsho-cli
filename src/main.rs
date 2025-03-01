@@ -1,11 +1,14 @@
+mod commands;
 mod configs;
 mod handlers;
 mod models;
 
+use crate::commands::{handle_reset, Command};
 use crate::configs::config::{load_marsho_config, load_model_config};
 use handlers::handler::MarshoHandler;
 use models::{context::MarshoContext, message::BaseMessage};
 use std::io::{self, Write};
+
 fn main() -> anyhow::Result<()> {
     let mut context = MarshoContext::new();
     let marsho_configs = load_marsho_config()?;
@@ -35,27 +38,22 @@ fn main() -> anyhow::Result<()> {
                 break;
             }
             Ok(0) => break,
-            Ok(_) => {
-                let command = input.trim();
-                match command {
-                    "/reset" => {
-                        context.reset();
-                        println!("上下文已重置")
-                    }
-                    _ => {
-                        let chat = handler.handle(input.clone())?;
-                        let reply = chat["choices"][0]["message"]["content"]
-                            .as_str()
-                            .unwrap()
-                            .to_string();
-                        println!("{}", reply);
-                        let user_message = BaseMessage::user(input.to_string());
-                        let assistant_message = BaseMessage::assistant(reply);
-                        context.add(user_message);
-                        context.add(assistant_message)
-                    }
+            Ok(_) => match Command::from_input(&input) {
+                Command::Reset => handle_reset(&mut context),
+                Command::Exit => break,
+                Command::Chat(input) => {
+                    let chat = handler.handle(input.clone())?;
+                    let reply = chat["choices"][0]["message"]["content"]
+                        .as_str()
+                        .unwrap()
+                        .to_string();
+                    println!("{}", reply);
+                    let user_message = BaseMessage::user(input);
+                    let assistant_message = BaseMessage::assistant(reply);
+                    context.add(user_message);
+                    context.add(assistant_message);
                 }
-            }
+            },
         }
     }
     Ok(())
