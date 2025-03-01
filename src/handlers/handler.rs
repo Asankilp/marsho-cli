@@ -22,14 +22,12 @@ impl MarshoHandler {
         }
     }
 
-    pub fn handle(&mut self, input: String) -> Result<String, reqwest::Error> {
-        let mut message = vec![
-                    BaseMessage::system(self.config.system_prompt.to_string()),
-                ];
+    pub fn handle(&mut self, input: String) -> Result<Value, reqwest::Error> {
+        let mut message = vec![BaseMessage::system(self.config.system_prompt.to_string())];
         message.extend(self.context.get().iter().cloned());
         message.extend(vec![BaseMessage::user(input.to_string())]);
         let chat = self.client.make_chat(&mut self.model_config, message)?;
-        let response = chat["choices"][0]["message"]["content"].as_str().unwrap();
-        Ok(response.to_string())
+        // let response = chat["choices"][0]["message"]["content"].as_str().unwrap();
+        Ok(chat)
     }
 }
