@@ -23,4 +23,8 @@ impl MarshoContext {
     pub fn reset(&mut self) {
         self.messages.clear();
     }
+
+    pub fn set(&mut self, messages: Vec<BaseMessage>) {
+        self.messages = messages;
+    }
 }

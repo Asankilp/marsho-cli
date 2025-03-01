@@ -1,3 +1,4 @@
 /target
 *.yaml
 model_config.json
+sessions/

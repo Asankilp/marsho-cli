@@ -1,16 +1,4 @@
-// #[derive(Debug)]
-// pub struct Marsho {
-//     pub base_url: String,
-//     pub api_key: String,
-//     pub model_args: ModelConfig,
-//     // contexts: Vec<String>,
-// }
-
-// pub struct MessageSegment<'a> {
-//     message: Vec<BaseMessage<'a>>,
-// }
-
-#[derive(serde::Serialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct BaseMessage {
     pub role: String,
     pub content: String,
