@@ -36,17 +36,13 @@ jobs:
           brew install openssl@3
           echo "OPENSSL_DIR=$(brew --prefix openssl@3)" >> $GITHUB_ENV
 
-      - name: Setup Android SDK & NDK
-        if: matrix.target == 'aarch64-linux-android'
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 8.0
-
-      - name: Install NDK
+      - name: Install Android NDK
         if: matrix.target == 'aarch64-linux-android'
         run: |
-          sdkmanager --install "ndk;25.2.9519653"
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/25.2.9519653" >> $GITHUB_ENV
+          wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip android-ndk-r25c-linux.zip
+          echo "ANDROID_NDK_HOME=$PWD/android-ndk-r25c" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$PWD/android-ndk-r25c" >> $GITHUB_ENV
 
       - name: Setup Android target
         if: matrix.target == 'aarch64-linux-android'
