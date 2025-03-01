@@ -1,0 +1,8 @@
+[target.aarch64-linux-android]
+rustflags = [
+    "-C", "link-arg=-lc",
+    "-C", "link-arg=-ldl",
+    "-C", "link-arg=-lm",
+    "-C", "link-arg=-llog",
+    "-C", "link-arg=-lunwind"
+]
