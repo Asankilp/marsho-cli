@@ -55,7 +55,7 @@ jobs:
         run: |
           git clone https://github.com/KDAB/android_openssl.git
           cd android_openssl
-          ./build.sh arm64
+          ./build_ssl.sh arm64
           echo "OPENSSL_DIR=$PWD/android_openssl_arm64" >> $GITHUB_ENV
           echo "OPENSSL_INCLUDE_DIR=$PWD/android_openssl_arm64/include" >> $GITHUB_ENV
           echo "OPENSSL_LIB_DIR=$PWD/android_openssl_arm64/lib" >> $GITHUB_ENV
