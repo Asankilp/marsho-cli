@@ -14,12 +14,16 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
           - os: macos-latest
             target: x86_64-apple-darwin
           - os: macos-latest
             target: aarch64-apple-darwin
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
           - os: ubuntu-latest
             target: aarch64-linux-android
     runs-on: ${{ matrix.os }}
@@ -129,7 +133,7 @@ jobs:
           }
 
       - name: Archive Non-Windows Artifacts
-        if: matrix.target != 'x86_64-pc-windows-msvc'
+        if: matrix.target != 'x86_64-pc-windows-msvc' && matrix.target != 'aarch64-pc-windows-msvc'
         shell: bash
         run: |
           mkdir -p target/artifacts
@@ -140,14 +144,14 @@ jobs:
           fi
 
       - name: Archive Windows Artifacts
-        if: matrix.target == 'x86_64-pc-windows-msvc'
+        if: contains(matrix.target, 'windows-msvc')
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path target/artifacts
           if ("${{ startsWith(github.ref, 'refs/tags/') }}" -eq "true") {
-            Copy-Item -Path "target/${{ matrix.target }}/release/marsho-cli.exe" -Destination "target/artifacts/marsho-cli-windows.exe"
+            Copy-Item -Path "target/${{ matrix.target }}/release/marsho-cli.exe" -Destination "target/artifacts/marsho-cli-${{ matrix.target }}.exe"
           } else {
-            Copy-Item -Path "target/${{ matrix.target }}/debug/marsho-cli.exe" -Destination "target/artifacts/marsho-cli-windows-debug.exe"
+            Copy-Item -Path "target/${{ matrix.target }}/debug/marsho-cli.exe" -Destination "target/artifacts/marsho-cli-${{ matrix.target }}-debug.exe"
           }
 
       - uses: actions/upload-artifact@v4
