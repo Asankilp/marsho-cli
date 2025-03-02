@@ -3,6 +3,8 @@ use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
 
+const LAST_SESSION_FILE: &str = ".last_session";
+
 pub fn write_session(messages: Vec<BaseMessage>, filename: &str) -> Result<()> {
     let sessions_dir = PathBuf::from("sessions");
     if !sessions_dir.exists() {
@@ -36,4 +38,16 @@ pub fn clear_session(filename: &str) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn save_last_session(name: &String) -> Result<String> {
+    fs::write(LAST_SESSION_FILE, name)?;
+    Ok(name.clone())
+}
+
+pub fn get_last_session() -> Result<String> {
+    match fs::read_to_string(LAST_SESSION_FILE) {
+        Ok(name) => Ok(name),
+        Err(_) => Ok("default".to_string())
+    }
 }

@@ -10,7 +10,7 @@ use colored::*;
 use handlers::handler::MarshoHandler;
 use models::{context::MarshoContext, message::BaseMessage};
 use std::io::{self, Write};
-use utils::session;
+use utils::session::{self, get_last_session, save_last_session};
 
 const ASCII_BANNER: &str = r#"
   __  __                        _                        ____   _       ___ 
@@ -25,7 +25,7 @@ fn main() -> anyhow::Result<()> {
     let mut context = MarshoContext::new();
     let marsho_configs = load_marsho_config()?;
     let model_configs = load_model_config()?;
-    let mut session_name = "default".to_string();
+    let mut session_name = get_last_session()?;
     
     println!("{}", ASCII_BANNER.bright_magenta());
     println!("使用 /reset 命令重置上下文");
@@ -71,7 +71,7 @@ fn main() -> anyhow::Result<()> {
                     } else if input.contains(char::is_whitespace) {
                         println!("会话名称不能包含空格");
                     } else {
-                        session_name = input;
+                        session_name = save_last_session(&input)?;
                         context.reset();
                         println!("会话已切换到：{}", session_name.bright_green().bold());
                     }
