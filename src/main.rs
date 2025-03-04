@@ -30,6 +30,12 @@ fn main() -> anyhow::Result<()> {
     println!("{}", ASCII_BANNER.bright_magenta());
     println!("使用 /reset 命令重置上下文");
     println!("使用 /session <会话名称> 命令切换会话");
+    println!("---------------------------------- ");
+    println!("Base URL: {}", marsho_configs.base_url.bright_blue().bold());
+    println!("模型名称: {}", model_configs["model"].as_str().unwrap().bright_blue().bold());
+    if marsho_configs.api_key.is_empty() {
+        println!("{}", "WARN: API Key 未设置".bright_yellow().bold());
+    }
 
     loop {
         print!("[{}] >>> ", session_name.bright_green().bold());
