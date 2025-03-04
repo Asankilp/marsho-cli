@@ -87,8 +87,8 @@ jobs:
             cargo ndk -t arm64-v8a -p 24 build
           fi
 
-      - name: Build Non-Windows
-        if: matrix.os != 'windows-latest' && matrix.target != 'aarch64-linux-android'
+      - name: Build
+        if: matrix.target != 'aarch64-linux-android'
         shell: bash
         run: |
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
@@ -97,37 +97,23 @@ jobs:
             cargo build --target ${{ matrix.target }}
           fi
 
-      - name: Build Windows
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          if ("${{ startsWith(github.ref, 'refs/tags/') }}" -eq "true") {
-            cargo build --release --target ${{ matrix.target }}
-          } else {
-            cargo build --target ${{ matrix.target }}
-          }
-
-      - name: Archive Non-Windows Artifacts
-        if: matrix.target != 'x86_64-pc-windows-msvc' && matrix.target != 'aarch64-pc-windows-msvc'
+      - name: Archive Artifacts
         shell: bash
         run: |
           mkdir -p target/artifacts
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
-            cp target/${{ matrix.target }}/release/marsho-cli target/artifacts/marsho-cli-${{ matrix.target }}
+            if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+              cp "target/${{ matrix.target }}/release/marsho-cli.exe" "target/artifacts/marsho-cli-${{ matrix.target }}.exe"
+            else
+              cp "target/${{ matrix.target }}/release/marsho-cli" "target/artifacts/marsho-cli-${{ matrix.target }}"
+            fi
           else
-            cp target/${{ matrix.target }}/debug/marsho-cli target/artifacts/marsho-cli-${{ matrix.target }}-debug
+            if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+              cp "target/${{ matrix.target }}/debug/marsho-cli.exe" "target/artifacts/marsho-cli-${{ matrix.target }}-debug.exe"
+            else
+              cp "target/${{ matrix.target }}/debug/marsho-cli" "target/artifacts/marsho-cli-${{ matrix.target }}-debug"
+            fi
           fi
-
-      - name: Archive Windows Artifacts
-        if: contains(matrix.target, 'windows-msvc')
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path target/artifacts
-          if ("${{ startsWith(github.ref, 'refs/tags/') }}" -eq "true") {
-            Copy-Item -Path "target/${{ matrix.target }}/release/marsho-cli.exe" -Destination "target/artifacts/marsho-cli-${{ matrix.target }}.exe"
-          } else {
-            Copy-Item -Path "target/${{ matrix.target }}/debug/marsho-cli.exe" -Destination "target/artifacts/marsho-cli-${{ matrix.target }}-debug.exe"
-          }
 
       - uses: actions/upload-artifact@v4
         with:
