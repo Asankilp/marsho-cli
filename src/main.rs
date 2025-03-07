@@ -59,12 +59,14 @@ fn main() -> anyhow::Result<()> {
                         context.clone(),
                     );
                     // println!("{:?}", context);
-                    let chat = handler.handle(input.clone())?;
+                    let chat = handler.handle(input.clone(), marsho_configs.stream)?;
                     let reply = chat["choices"][0]["message"]["content"]
                         .as_str()
                         .unwrap()
                         .to_string();
-                    println!("{}", reply);
+                    if marsho_configs.stream == false {
+                        println!("{}", reply);
+                    }
                     let user_message = BaseMessage::user(input);
                     let assistant_message = BaseMessage::assistant(reply);
                     context.add(user_message);
