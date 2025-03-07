@@ -23,7 +23,7 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
           - os: macos-latest
-            target: arm64e-apple-ios
+            target: aarch64-apple-ios
           - os: windows-latest
             target: x86_64-pc-windows-msvc
           - os: windows-latest
