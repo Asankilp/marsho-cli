@@ -34,6 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install i686 OpenSSL
+        if: matrix.target == 'i686-unknown-linux-gnu'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib libssl-dev:i386 pkg-config:i386
+          
+          # 设置环境变量
+          echo "PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig" >> $GITHUB_ENV
+          echo "OPENSSL_DIR=/usr" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=/usr/include" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu" >> $GITHUB_ENV
+
       - name: Setup Android target
         if: matrix.target == 'aarch64-linux-android'
         run: |
@@ -76,6 +89,21 @@ jobs:
           target: ${{ matrix.target }}
           override: true
 
+      - name: Build i686
+        shell: bash
+        if: matrix.target == 'i686-unknown-linux-gnu'
+        env:
+          PKG_CONFIG_PATH: ${{ env.PKG_CONFIG_PATH }}
+          OPENSSL_DIR: ${{ env.OPENSSL_DIR }}
+          OPENSSL_INCLUDE_DIR: ${{ env.OPENSSL_INCLUDE_DIR }}
+          OPENSSL_LIB_DIR: ${{ env.OPENSSL_LIB_DIR }}
+        run: |
+          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
+            cargo build --release --target ${{ matrix.target }}
+          else
+            cargo build --target ${{ matrix.target }}
+          fi
+
       - name: Build Android
         shell: bash
         if: matrix.target == 'aarch64-linux-android'
@@ -92,7 +120,7 @@ jobs:
           fi
 
       - name: Build
-        if: matrix.target != 'aarch64-linux-android'
+        if: matrix.target != 'aarch64-linux-android' && matrix.target != 'i686-unknown-linux-gnu'
         shell: bash
         run: |
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
