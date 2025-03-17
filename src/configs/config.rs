@@ -54,10 +54,10 @@ pub fn load_model_config() -> anyhow::Result<Value> {
 
 pub fn load_marsho_config() -> anyhow::Result<MarshoConfig> {
     let config_path = "config.yaml";
-    let config_str = serde_yaml::to_string(&MarshoConfig::default())?;
     let path = Path::new(config_path);
 
     if !path.exists() {
+        let config_str = serde_yaml::to_string(&MarshoConfig::default())?;
         std::fs::write(config_path, config_str)?;
     }
 

@@ -3,6 +3,8 @@ use crate::{models::context::MarshoContext, utils::session};
 pub enum Command {
     Reset,
     Exit,
+    Models,
+    Config(String),
     Session(String),
     Chat(String),
 }
@@ -13,10 +15,15 @@ impl Command {
         if let Some(session_cmd) = input.strip_prefix("/session") {
             let session_name = session_cmd.trim();
             Command::Session(session_name.to_string())
+        } else if let Some(config_cmd) = input.strip_prefix("/config") {
+            let config_options = config_cmd.trim();
+            println!("Config options: {}", config_options);
+            Command::Config(config_options.to_string())
         } else {
             match input {
                 "/reset" => Command::Reset,
                 "/exit" => Command::Exit,
+                "/models" => Command::Models,
                 chat => Command::Chat(chat.to_string()),
             }
         }
