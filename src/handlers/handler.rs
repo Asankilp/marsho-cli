@@ -26,14 +26,22 @@ impl MarshoHandler {
         let mut message = vec![BaseMessage::system(self.config.system_prompt.to_string())];
         message.extend(self.context.get().iter().cloned());
         message.extend(vec![BaseMessage::user(input.to_string())]);
-        if stream == true {
-            let chat = self.client.make_chat_stream(&mut self.model_config, message)?;
+        if stream {
+            let chat = self
+                .client
+                .make_chat_stream(&mut self.model_config, message)?;
             Ok(chat)
-
         } else {
             let chat = self.client.make_chat(&mut self.model_config, message)?;
             Ok(chat)
-    }
+        }
         // let response = chat["choices"][0]["message"]["content"].as_str().unwrap();
+    }
+
+    pub fn models(&mut self) {
+        let resp = self.client.get_models().unwrap();
+        for model_name in resp.data {
+            println!("{}", model_name.id);
+        }
     }
 }

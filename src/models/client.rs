@@ -1,7 +1,11 @@
+use std::io::{self, Write};
+
+use futures_util::StreamExt;
 use reqwest::{header, Client};
 use serde_json::Value;
 use url::Url;
-use futures_util::StreamExt;
+
+use crate::schemas::models::Models;
 
 use super::message::BaseMessage;
 #[derive(serde::Serialize)]
@@ -51,7 +55,6 @@ impl OpenAIClient {
         Ok(json)
     }
 
-
     #[tokio::main]
     pub async fn make_chat_stream(
         &self,
@@ -87,40 +90,30 @@ impl OpenAIClient {
         let mut last_chunk = String::new();
 
         while let Some(chunk) = stream.next().await {
-            let text = chunk?
-                .to_vec()
-                .try_into()
-                .map(String::from_utf8)
-                .ok()
-                .and_then(Result::ok)
-                .unwrap_or_default();
+            let line = String::from_utf8(chunk?.to_vec()).expect("Found invalid UTF-8");
 
-            last_chunk = text.clone();
-            
-            for line in text.lines() {
-                // print!("{}", line);
-                if !line.starts_with("data: ") || line.contains("[DONE]") {
-                    continue;
+            if !line.starts_with("data: ") || line.contains("[DONE]") {
+                continue;
+            }
+
+            // println!("{}", line);
+            last_chunk = line.clone();
+
+            let sse_json: Value = serde_json::from_str(&line[6..]).expect("解析的不是json？！！");
+
+            let content = sse_json["choices"][0]["delta"]["content"].as_str();
+            if let Some(text) = content {
+                if io::stdout().flush().is_err() {
+                    println!("flush err")
                 }
-
-                let content = serde_json::from_str::<Value>(&line[6..])
-                    .ok()
-                    .and_then(|json| json.get("choices").cloned())
-                    .and_then(|choices| choices.get(0).cloned())
-                    .and_then(|choice| choice.get("delta").cloned())
-                    .and_then(|delta| delta.get("content").cloned())
-                    .and_then(|content| content.as_str().map(String::from));
-
-                if let Some(text) = content {
-                    print!("{}", text);
-                    responses.push(text);
-                }
+                print!("{}", text);
+                responses.push(String::from(text));
             }
         }
 
         // 合并所有响应片段
         let complete_message = responses.join("");
-        print!("\n");
+        println!();
 
         // 创建或修改最终响应
         let final_response = match last_chunk
@@ -131,7 +124,8 @@ impl OpenAIClient {
         {
             Some(mut json) => {
                 if let Some(obj) = json.as_object_mut() {
-                    obj["choices"][0]["message"]["content"] = Value::String(complete_message.clone());
+                    obj["choices"][0]["message"]["content"] =
+                        Value::String(complete_message.clone());
                 }
                 Some(json)
             }
@@ -141,9 +135,27 @@ impl OpenAIClient {
                         "content": complete_message
                     }
                 }]
-            }))
+            })),
         };
 
         Ok(final_response.unwrap())
+    }
+
+    #[tokio::main]
+    pub async fn get_models(&self) -> Result<Models, reqwest::Error> {
+        let client = Client::new();
+        let url = Url::parse(&self.base_url).unwrap().join("models").unwrap();
+        println!("{}", url);
+
+        let api_key = &self.api_key;
+        let mut headers = header::HeaderMap::new();
+        headers.insert(
+            "Authorization",
+            header::HeaderValue::from_str(api_key).unwrap(),
+        );
+        let res = client.get(url).headers(headers).send().await?;
+        let body: Models = res.json().await?;
+
+        Ok(body)
     }
 }
