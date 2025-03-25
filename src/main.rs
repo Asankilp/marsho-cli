@@ -47,11 +47,7 @@ fn main() -> anyhow::Result<()> {
     if marsho_configs.api_key.is_empty() {
         println!("{}", "WARN: API Key 未设置".bright_yellow().bold());
     }
-    let mut handler = MarshoHandler::new(
-        marsho_configs.clone(),
-        model_configs.clone(),
-        context.clone(),
-    );
+    let mut handler = MarshoHandler::new(marsho_configs.clone(), model_configs.clone());
 
     loop {
         print!("[{}] >>> ", session_name.bright_green().bold());
@@ -70,9 +66,9 @@ fn main() -> anyhow::Result<()> {
                     if input.is_empty() {
                         println!("当前配置：{:?}", marsho_configs)
                     } else {
-                        let item:Vec<&str> = input.split_whitespace().collect();
+                        let item: Vec<&str> = input.split_whitespace().collect();
                         if item.len() == 3 {
-                            println!("option:{} args{} {}", item[0], item[1],item[2])
+                            println!("option:{} args{} {}", item[0], item[1], item[2])
                             //TODO: update config
                         } else {
                             println!("{}", input)
@@ -85,7 +81,8 @@ fn main() -> anyhow::Result<()> {
                     context.set(loaded_session);
 
                     // println!("{:?}", context);
-                    let chat = handler.handle(input.clone(), marsho_configs.stream)?;
+                    let chat =
+                        handler.handle(input.clone(), context.clone(), marsho_configs.stream)?;
                     let reply = chat["choices"][0]["message"]["content"]
                         .as_str()
                         .unwrap()
@@ -102,7 +99,7 @@ fn main() -> anyhow::Result<()> {
                 Command::Session(input) => {
                     if input.is_empty() {
                         println!("请使用格式：/session <会话名称>");
-                        let session_names=get_all_session()?;
+                        let session_names = get_all_session()?;
                         for name in session_names {
                             println!("{}", name);
                         }

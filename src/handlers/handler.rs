@@ -7,24 +7,27 @@ use serde_json::Value;
 pub struct MarshoHandler {
     config: MarshoConfig,
     model_config: Value,
-    context: MarshoContext,
     client: OpenAIClient,
 }
 
 impl MarshoHandler {
-    pub fn new(config: MarshoConfig, model_config: Value, context: MarshoContext) -> Self {
+    pub fn new(config: MarshoConfig, model_config: Value) -> Self {
         let client = OpenAIClient::new(config.base_url.clone(), config.api_key.clone());
         Self {
             config,
             model_config,
-            context,
             client,
         }
     }
 
-    pub fn handle(&mut self, input: String, stream: bool) -> Result<Value, reqwest::Error> {
+    pub fn handle(
+        &mut self,
+        input: String,
+        context: MarshoContext,
+        stream: bool,
+    ) -> Result<Value, reqwest::Error> {
         let mut message = vec![BaseMessage::system(self.config.system_prompt.to_string())];
-        message.extend(self.context.get().iter().cloned());
+        message.extend(context.get().iter().cloned());
         message.extend(vec![BaseMessage::user(input.to_string())]);
         if stream {
             let chat = self
